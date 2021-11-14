@@ -1,2 +1,1 @@
-web: java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/*.jar
-
+web: java -jar target/telegram_hyecorn_bot-0.0.1-SNAPSHOT.jar
