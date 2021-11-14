@@ -1,1 +1,1 @@
-web: java -jar target/telegram_hyecorn_bot-0.0.1-SNAPSHOT.jar
+web: java -jar build/libs/telegram_hyecorn_bot-0.0.1-SNAPSHOT.jar
