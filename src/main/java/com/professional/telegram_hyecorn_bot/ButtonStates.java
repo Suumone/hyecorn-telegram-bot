@@ -1,9 +1,16 @@
 package com.professional.telegram_hyecorn_bot;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public enum ButtonStates {
     SPEND("Потратить купон"),
     SUBSCRIBE("Подписаться");
 
-    ButtonStates(String text){
+    private final String buttonStatusText;
+
+    @Override
+    public String toString() {
+        return buttonStatusText;
     }
 }

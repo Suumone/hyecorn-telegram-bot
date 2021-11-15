@@ -3,6 +3,7 @@ package com.professional.telegram_hyecorn_bot;
 import com.professional.telegram_hyecorn_bot.model.User;
 import com.professional.telegram_hyecorn_bot.service.UserService;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.session.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class ChatBot extends TelegramLongPollingSessionBot {
 
     private final String token;
@@ -51,6 +53,7 @@ public class ChatBot extends TelegramLongPollingSessionBot {
         String firstName = null;
         String lastName = null;
         if (update.hasCallbackQuery()) {
+            log.trace("CallbackQuery received chatId={}", chatId);
             chatId = update.getCallbackQuery().getFrom().getId();
         }
         if (update.hasMessage()) {
@@ -58,6 +61,7 @@ public class ChatBot extends TelegramLongPollingSessionBot {
             text = update.getMessage().getText();
             firstName = update.getMessage().getChat().getFirstName();
             lastName = update.getMessage().getChat().getLastName();
+            log.trace("Message received chatId={}", chatId);
         }
 
         User user = userService.findByChatId(chatId);
@@ -78,6 +82,8 @@ public class ChatBot extends TelegramLongPollingSessionBot {
             botContext = new BotContext(this, user, text);
             state = BotState.byId(user.getStateId());
         }
+
+        log.trace("Chat={}, UserId={}, stateId={}", chatId, user.getId(), user.getStateId());
         //обрабатываем что ввел пользователь
         state.handleInput(botContext);
 
@@ -85,7 +91,6 @@ public class ChatBot extends TelegramLongPollingSessionBot {
             state = state.nextState(botContext);
             state.enter(botContext);
         } while (state.isEnterImmediately());
-
 
         user.setStateId(state.ordinal());
         userService.updateUser(user);
@@ -106,6 +111,8 @@ public class ChatBot extends TelegramLongPollingSessionBot {
                             .text("Напишите @HyecornSupportBot")
                             .build();
                     this.execute(messageToSend);
+
+                    log.trace("User from chat={} typed /support", message.getChatId());
                     return true;
                 }
             }

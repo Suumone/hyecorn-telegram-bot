@@ -3,6 +3,7 @@ package com.professional.telegram_hyecorn_bot;
 import com.professional.telegram_hyecorn_bot.model.User;
 import com.professional.telegram_hyecorn_bot.utils.Utils;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -12,8 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.professional.telegram_hyecorn_bot.ButtonStates.SPEND;
-
+@Slf4j
 public enum BotState {
     Start {
         @Override
@@ -29,19 +29,29 @@ public enum BotState {
     },
 
     EnterPhone {
+        private BotState next;
+
         @Override
         public void enter(BotContext context) {
-            sendMessage(context, "Введите номер телефона:");
+            sendMessage(context, "Введите номер телефона");
         }
 
         @Override
         public void handleInput(BotContext context) {
-            context.getUser().setPhone(context.getInput());
+            String phoneNumber = context.getInput();
+
+            if (Utils.isValidPhoneNumber(phoneNumber)) {
+                context.getUser().setPhone(phoneNumber);
+                next = EnterEmail;
+            } else {
+                sendMessage(context, "Некорректный телефон");
+                next = EnterPhone;
+            }
         }
 
         @Override
         public BotState nextState(BotContext context) {
-            return EnterEmail;
+            return next;
         }
     },
 
@@ -50,7 +60,7 @@ public enum BotState {
 
         @Override
         public void enter(BotContext context) {
-            sendMessage(context, "Введите почту:");
+            sendMessage(context, "Введите почту");
         }
 
         @Override
@@ -58,7 +68,7 @@ public enum BotState {
             String email = context.getInput();
 
             if (Utils.isValidEmail(email)) {
-                context.getUser().setEmail(context.getInput());
+                context.getUser().setEmail(email);
                 next = Payment;
             } else {
                 sendMessage(context, "Некорректная почта");
@@ -95,7 +105,7 @@ public enum BotState {
         public void enter(BotContext context) {
             sendMessageWithButton(context,
                     "Поздравляем, вам доступно " + context.getUser().getCouponsNumber() + " купонов, можете тратить их в любое время в любом количестве!",
-                    SPEND);
+                    ButtonStates.SPEND);
         }
 
         @Override
@@ -105,7 +115,6 @@ public enum BotState {
     },
 
     ReadyToSpend {
-
         @Override
         public void enter(BotContext context) {
             sendMessage(context, "наверно вывод чтото типо штрих кода или qr-кода");
@@ -119,7 +128,7 @@ public enum BotState {
             if (user.getCouponsNumber() > 0) {
                 sendMessageWithButton(context,
                         "Супер, вы потратили купон, вам доступно еще " + user.getCouponsNumber() + " купонов в рамках подписки",
-                        SPEND);
+                        ButtonStates.SPEND);
             } else {
                 sendMessage(context, "Спасибо, что пользуетесь нашим сервисом! У вас не осталось купонов.");
                 sendMessageWithButton(context,
@@ -161,15 +170,14 @@ public enum BotState {
         rows.add(new ArrayList<>());
 
         InlineKeyboardButton button = new InlineKeyboardButton();
-
         switch (buttonState) {
             case SPEND:
-                button.setText("Потратить купон");
-                button.setCallbackData("SPEND");
+                button.setText(ButtonStates.SPEND.toString());
+                button.setCallbackData(ButtonStates.SPEND.name());
                 break;
             case SUBSCRIBE:
-                button.setText("Подписаться");
-                button.setCallbackData("SUBSCRIBE");
+                button.setText(ButtonStates.SUBSCRIBE.toString());
+                button.setCallbackData(ButtonStates.SUBSCRIBE.name());
                 break;
         }
 
