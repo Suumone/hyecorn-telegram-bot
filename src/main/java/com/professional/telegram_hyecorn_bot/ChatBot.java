@@ -76,7 +76,7 @@ public class ChatBot extends TelegramLongPollingSessionBot {
         if (user == null) {
             state = BotState.getInitialState();
             user = new User(chatId, state.ordinal(), firstName, lastName);
-            userService.updateUser(user);
+            userService.createUser(user);
             botContext = new BotContext(this, user, text);
 
             state.enter(botContext);

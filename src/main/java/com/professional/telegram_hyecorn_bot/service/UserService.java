@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -21,6 +22,12 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<User> findAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Transactional
+    public void createUser(User user){
+        user.setCreateDate(LocalDateTime.now());
+        userRepository.save(user);
     }
 
     @Transactional
