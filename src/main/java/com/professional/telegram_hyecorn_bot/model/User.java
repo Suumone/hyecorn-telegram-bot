@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.ws.rs.DefaultValue;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -30,6 +31,7 @@ public class User {
     private String email;
     @DefaultValue("0")
     private int couponsNumber;
+    private LocalDateTime createDate;
 
     public User(Long chatId, Integer state, String firstName, String lastName) {
         this.chatId = chatId;
