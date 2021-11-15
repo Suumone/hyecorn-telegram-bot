@@ -160,6 +160,8 @@ public enum BotState {
                 .chatId(Long.toString(context.getUser().getChatId()))
                 .text(text)
                 .build();
+
+        log.trace("Sending message:{}", message.toString());
         context.getBot().execute(message);
     }
 
@@ -189,6 +191,8 @@ public enum BotState {
                 .text(text)
                 .replyMarkup(inlineKeyboardMarkup)
                 .build();
+
+        log.trace("Sending message with buttons:{}", message.toString());
         context.getBot().execute(message);
     }
 
@@ -199,6 +203,8 @@ public enum BotState {
                 .chatId(Long.toString(context.getUser().getChatId()))
                 .photo(new InputFile(url))
                 .build();
+
+        log.trace("Sending photo:{}", message.toString());
         context.getBot().execute(message);
     }
 

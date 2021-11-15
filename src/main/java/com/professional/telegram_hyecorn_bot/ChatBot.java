@@ -8,6 +8,7 @@ import org.apache.shiro.session.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -53,15 +54,17 @@ public class ChatBot extends TelegramLongPollingSessionBot {
         String firstName = null;
         String lastName = null;
         if (update.hasCallbackQuery()) {
-            log.trace("CallbackQuery received chatId={}", chatId);
-            chatId = update.getCallbackQuery().getFrom().getId();
+            CallbackQuery callbackQuery = update.getCallbackQuery();
+            log.trace("INCOMING CallbackQuery:{}", callbackQuery.toString());
+            chatId = callbackQuery.getFrom().getId();
         }
         if (update.hasMessage()) {
-            chatId = update.getMessage().getChatId();
-            text = update.getMessage().getText();
-            firstName = update.getMessage().getChat().getFirstName();
-            lastName = update.getMessage().getChat().getLastName();
-            log.trace("Message received chatId={}", chatId);
+            Message message = update.getMessage();
+            chatId = message.getChatId();
+            text = message.getText();
+            firstName = message.getChat().getFirstName();
+            lastName = message.getChat().getLastName();
+            log.trace("INCOMING Message:{}", message.toString());
         }
 
         User user = userService.findByChatId(chatId);
@@ -106,13 +109,14 @@ public class ChatBot extends TelegramLongPollingSessionBot {
             if (commandEntity.isPresent()) {
                 String command = message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
                 if (Objects.equals(command, "/support")) {
+                    log.trace("INCOMING /support:{}", message.toString());
+
                     SendMessage messageToSend = SendMessage.builder()
                             .chatId(Long.toString(message.getChatId()))
                             .text("Напишите @HyecornSupportBot")
                             .build();
                     this.execute(messageToSend);
 
-                    log.trace("User from chat={} typed /support", message.getChatId());
                     return true;
                 }
             }
