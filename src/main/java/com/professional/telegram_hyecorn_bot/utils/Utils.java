@@ -3,6 +3,7 @@ package com.professional.telegram_hyecorn_bot.utils;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.LongValidator;
+import org.jetbrains.annotations.NotNull;
 
 public class Utils {
     public static boolean isValidEmail(String email) {
@@ -10,6 +11,17 @@ public class Utils {
     }
 
     public static boolean isValidPhoneNumber(String phoneNumber) {
+        phoneNumber = getStringasd(phoneNumber);
+
+        return LongValidator.getInstance().isValid(phoneNumber);
+    }
+
+    public static String validatePhoneNumber(String phoneNumber) {
+        return phoneNumber = getStringasd(phoneNumber);
+    }
+
+    @NotNull
+    private static String getStringasd(String phoneNumber) {
         phoneNumber = phoneNumber.replaceAll("\\s", "");
         phoneNumber = phoneNumber.replaceFirst("\\+", "");
         phoneNumber = phoneNumber.replaceFirst("\\(", "");
@@ -19,10 +31,6 @@ public class Utils {
         if (phoneNumber.length() == 11 && phoneNumber.charAt(0) == '7' || phoneNumber.charAt(0) == '8') {
             phoneNumber = phoneNumber.substring(1);
         }
-
-        if (phoneNumber.charAt(0) != '9') {
-            return false;
-        }
-        return LongValidator.getInstance().isValid(phoneNumber);
+        return phoneNumber;
     }
 }

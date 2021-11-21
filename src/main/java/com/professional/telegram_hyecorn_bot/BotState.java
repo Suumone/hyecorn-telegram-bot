@@ -4,6 +4,7 @@ import com.professional.telegram_hyecorn_bot.model.User;
 import com.professional.telegram_hyecorn_bot.utils.Utils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.validator.routines.LongValidator;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -38,9 +39,9 @@ public enum BotState {
 
         @Override
         public void handleInput(BotContext context) {
-            String phoneNumber = context.getInput();
 
-            if (Utils.isValidPhoneNumber(phoneNumber)) {
+            String phoneNumber = Utils.validatePhoneNumber(context.getInput());
+            if (LongValidator.getInstance().isValid(phoneNumber)){
                 context.getUser().setPhone(phoneNumber);
                 next = EnterEmail;
             } else {
