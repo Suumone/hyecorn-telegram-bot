@@ -11,17 +11,19 @@ public class Utils {
     }
 
     public static boolean isValidPhoneNumber(String phoneNumber) {
-        phoneNumber = getStringasd(phoneNumber);
-
+        phoneNumber = getValidPhoneString(phoneNumber);
+        if (phoneNumber.length() != 10) {
+            return false;
+        }
         return LongValidator.getInstance().isValid(phoneNumber);
     }
 
     public static String validatePhoneNumber(String phoneNumber) {
-        return phoneNumber = getStringasd(phoneNumber);
+        return getValidPhoneString(phoneNumber);
     }
 
     @NotNull
-    private static String getStringasd(String phoneNumber) {
+    private static String getValidPhoneString(String phoneNumber) {
         phoneNumber = phoneNumber.replaceAll("\\s", "");
         phoneNumber = phoneNumber.replaceFirst("\\+", "");
         phoneNumber = phoneNumber.replaceFirst("\\(", "");

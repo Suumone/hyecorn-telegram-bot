@@ -4,7 +4,6 @@ import com.professional.telegram_hyecorn_bot.model.User;
 import com.professional.telegram_hyecorn_bot.utils.Utils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.validator.routines.LongValidator;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -20,7 +19,7 @@ public enum BotState {
         @Override
         public void enter(BotContext context) {
             sendMessage(context, "Приветствую, " + context.getUser().getFirstName() + "!");
-            sendMessage(context, "описание подписки и сервиса");
+            sendMessage(context, "Это бот для оформления подписки на любимый кофе. Как это работает: Вы покупаете 10 чашек любимого кофе по цене 8! Вы оплачиваете сумму за 8 чашек кофе единоразовым платежом для оформления подписки. По подписке Вам становится доступно 10 чашек кофе, Вы можете тратить их в этой кофейне в любое время в любом количестве. Обратите внимание, что все эти чашки кофе надо выпить в течение месяца. Те чашки кофе, которые Вы не успеете выпить в течение месяца, сгорят :( Подписку нельзя использовать в других кофейнях. После оплаты, чтобы получить чашку кофе - при бариста нажмите на кнопку \"Получить чашку кофе\" ниже, тогда вам будет доступно уже не 10, а 9 чашек. Ссылка на оплату - в сообщении ниже. Вкусного Вам кофе! :)");
         }
 
         @Override
@@ -40,9 +39,9 @@ public enum BotState {
         @Override
         public void handleInput(BotContext context) {
 
-            String phoneNumber = Utils.validatePhoneNumber(context.getInput());
-            if (LongValidator.getInstance().isValid(phoneNumber)){
-                context.getUser().setPhone(phoneNumber);
+            String phoneNumber = context.getInput();
+            if (Utils.isValidPhoneNumber(phoneNumber)) {
+                context.getUser().setPhone(Utils.validatePhoneNumber(phoneNumber));
                 next = EnterEmail;
             } else {
                 sendMessage(context, "Некорректный телефон");
@@ -105,7 +104,7 @@ public enum BotState {
         @Override
         public void enter(BotContext context) {
             sendMessageWithButton(context,
-                    "Поздравляем, вам доступно " + context.getUser().getCouponsNumber() + " купонов, можете тратить их в любое время в любом количестве!",
+                    "Поздравляем, вам доступно " + context.getUser().getCouponsNumber() + " чашек кофе, можете тратить их в любое время в любом количестве! Чтобы получить первую чашку кофе - при бариста нажмите на кнопку \"Получить чашку кофе\" ниже.",
                     ButtonStates.SPEND);
         }
 
@@ -118,22 +117,16 @@ public enum BotState {
     ReadyToSpend {
         @Override
         public void enter(BotContext context) {
-            sendMessage(context, "наверно вывод чтото типо штрих кода или qr-кода");
-            sendMessage(context, "вакцинации");
-            sendMessageWithPicture(context, "https://pbs.twimg.com/media/Ep7JUEmW8AAuolJ?format=jpg&name=large");
+            context.getUser().setCouponsNumber(context.getUser().getCouponsNumber() - 1);
 
-            sendMessage(context, "потратился 1 купон");
-            User user = context.getUser();
-            user.setCouponsNumber(user.getCouponsNumber() - 1);
-
-            if (user.getCouponsNumber() > 0) {
+            if (context.getUser().getCouponsNumber() > 0) {
                 sendMessageWithButton(context,
-                        "Супер, вы потратили купон, вам доступно еще " + user.getCouponsNumber() + " купонов в рамках подписки",
+                        "Приятного Вам кофе! В этом месяце Вам доступно еще " + context.getUser().getCouponsNumber() + " чашек :)",
                         ButtonStates.SPEND);
             } else {
-                sendMessage(context, "Спасибо, что пользуетесь нашим сервисом! У вас не осталось купонов.");
+                sendMessage(context, "Спасибо, что пользуетесь нашим сервисом! У вас не осталось чашек кофе по подписке.");
                 sendMessageWithButton(context,
-                        "Хотите оформить повторно для этого же ресторана?",
+                        "Хотите оформить подписку повторно?",
                         ButtonStates.SUBSCRIBE);
             }
         }
@@ -177,6 +170,7 @@ public enum BotState {
             case SPEND:
                 button.setText(ButtonStates.SPEND.toString());
                 button.setCallbackData(ButtonStates.SPEND.name());
+                //button.setUrl("google.com");
                 break;
             case SUBSCRIBE:
                 button.setText(ButtonStates.SUBSCRIBE.toString());

@@ -32,6 +32,8 @@ public class ChatBot extends TelegramLongPollingSessionBot {
         this.token = token;
         this.botUsername = botUsername;
         this.userService = userService;
+
+        log.trace("Bot {} started", botUsername);
     }
 
     @Override
@@ -86,7 +88,6 @@ public class ChatBot extends TelegramLongPollingSessionBot {
             state = BotState.byId(user.getStateId());
         }
 
-        log.trace("Chat={}, UserId={}, stateId={}", chatId, user.getId(), user.getStateId());
         //обрабатываем что ввел пользователь
         state.handleInput(botContext);
 

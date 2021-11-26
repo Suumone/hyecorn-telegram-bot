@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum ButtonStates {
-    SPEND("Потратить купон"),
-    SUBSCRIBE("Подписаться");
+    SPEND("Получить чашку кофе"),
+    SUBSCRIBE("Перейти к оплате");
 
     private final String buttonStatusText;
 

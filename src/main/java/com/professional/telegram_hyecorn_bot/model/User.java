@@ -24,6 +24,7 @@ public class User {
 
     private Long chatId;
     private Integer stateId;
+    //private String state;
     private String firstName;
     private String lastName;
     private String phone;
