@@ -110,8 +110,8 @@ public class ChatBot extends TelegramLongPollingSessionBot {
             if (commandEntity.isPresent()) {
                 String command = message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
 
-                if (Objects.equals(command, "/delete")) {
-                    log.trace("INCOMING /delete:{}", message.toString());
+                if (Objects.equals(command, "/deleteMe")) {
+                    log.trace("INCOMING /deleteMe:{}", message.toString());
                     Long userId = userService.findByChatId(message.getChatId()).getId();
                     if (userId != null) {
                         userService.deleteUser(userId);
