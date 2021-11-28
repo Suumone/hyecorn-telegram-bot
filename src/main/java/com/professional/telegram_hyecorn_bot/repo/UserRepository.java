@@ -7,4 +7,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByChatId(long id);
 
+    void deleteById(long id);
 }
