@@ -4,22 +4,21 @@ import com.professional.telegram_hyecorn_bot.model.User;
 import com.professional.telegram_hyecorn_bot.service.UserService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.session.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.session.TelegramLongPollingSessionBot;
 
 import java.util.Objects;
 import java.util.Optional;
 
 @Component
 @Slf4j
-public class ChatBot extends TelegramLongPollingSessionBot {
+public class ChatBot extends TelegramLongPollingBot {
 
     private final String token;
     private final String botUsername;
@@ -47,7 +46,7 @@ public class ChatBot extends TelegramLongPollingSessionBot {
     }
 
     @Override
-    public void onUpdateReceived(Update update, Optional<Session> botSession) {
+    public void onUpdateReceived(Update update) {
         if (checkCommands(update))
             return;
 
@@ -102,7 +101,7 @@ public class ChatBot extends TelegramLongPollingSessionBot {
 
     @SneakyThrows
     private boolean checkCommands(Update update) {
-        if (update.hasMessage()) {
+        if (update.hasMessage() && (update.getMessage() != null)) {
             Message message = update.getMessage();
 
             Optional<MessageEntity> commandEntity =
