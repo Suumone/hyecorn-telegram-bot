@@ -8,7 +8,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +37,17 @@ public enum BotState {
 
         @Override
         public void enter(BotContext context) {
-            sendMessage(context, "Введите номер телефона");
+            //кнопка убирается в начале следующего стейта
+            sendMessageRequestPhone(context, "Введите номер телефона");
         }
 
         @Override
         public void handleInput(BotContext context) {
+            if (context.getContact() != null && context.getContact().getPhoneNumber() != null) {
+                context.getUser().setPhone(Utils.validatePhoneNumber(context.getContact().getPhoneNumber()));
+                next = EnterEmail;
+                return;
+            }
 
             String phoneNumber = context.getInput();
             if (Utils.isValidPhoneNumber(phoneNumber)) {
@@ -60,7 +70,7 @@ public enum BotState {
 
         @Override
         public void enter(BotContext context) {
-            sendMessage(context, "Введите почту");
+            sendMessageWithKeyboardRemove(context, "Введите почту");
         }
 
         @Override
@@ -87,7 +97,6 @@ public enum BotState {
         public void enter(BotContext context) {
             User user = context.getUser();
             user.setCouponsNumber(user.getCouponsNumber() + 10);
-            sendMessage(context, "Здесь будет оплата");
         }
 
         @Override
@@ -153,6 +162,48 @@ public enum BotState {
         SendMessage message = SendMessage.builder()
                 .chatId(Long.toString(context.getUser().getChatId()))
                 .text(text)
+                .build();
+
+        log.trace("Sending message:{}", message.toString());
+        context.getBot().execute(message);
+    }
+
+    @SneakyThrows
+    protected void sendMessageWithKeyboardRemove(BotContext context, String text) {
+        SendMessage message = SendMessage.builder()
+                .chatId(Long.toString(context.getUser().getChatId()))
+                .text(text)
+                .replyMarkup(ReplyKeyboardRemove.builder()
+                        .removeKeyboard(true)
+                        .build()
+                )
+                .build();
+
+        log.trace("Sending KeyboardRemove");
+        context.getBot().execute(message);
+    }
+
+    @SneakyThrows
+    protected void sendMessageRequestPhone(BotContext context, String text) {
+
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true);
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        KeyboardButton keyboardButton = new KeyboardButton();
+        keyboardButton.setText("Отправить номер телефона");
+        keyboardButton.setRequestContact(true);
+        keyboardFirstRow.add(keyboardButton);
+        keyboard.add(keyboardFirstRow);
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(Long.toString(context.getUser().getChatId()))
+                .text(text)
+                .replyMarkup(replyKeyboardMarkup)
                 .build();
 
         log.trace("Sending message:{}", message.toString());

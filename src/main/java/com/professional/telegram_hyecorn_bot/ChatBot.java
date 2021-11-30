@@ -1,5 +1,7 @@
 package com.professional.telegram_hyecorn_bot;
 
+import com.professional.telegram_hyecorn_bot.BotStates.BotStates;
+import com.professional.telegram_hyecorn_bot.BotStates.StateAbstract;
 import com.professional.telegram_hyecorn_bot.model.User;
 import com.professional.telegram_hyecorn_bot.service.UserService;
 import lombok.SneakyThrows;
@@ -8,10 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.*;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -54,6 +53,7 @@ public class ChatBot extends TelegramLongPollingBot {
         long chatId = 0;
         String firstName = null;
         String lastName = null;
+        Contact contact = null;
         if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
             log.trace("INCOMING CallbackQuery:{}", callbackQuery.toString());
@@ -65,37 +65,48 @@ public class ChatBot extends TelegramLongPollingBot {
             text = message.getText();
             firstName = message.getChat().getFirstName();
             lastName = message.getChat().getLastName();
+            contact = message.getContact();
             log.trace("INCOMING Message:{}", message.toString());
         }
 
         User user = userService.findByChatId(chatId);
 
         BotContext botContext;
-        BotState state;
+        //BotState state;
+        StateAbstract userState;
 
         //Возможно ли не найти пользователя по чату если у него есть кнопка????
         if (user == null) {
-            state = BotState.getInitialState();
-            user = new User(chatId, state.ordinal(), firstName, lastName);
+            //state = BotState.getInitialState();
+            userState = StateAbstract.create(BotStates.getInitialState());
+            user = new User(chatId, userState.toString(), firstName, lastName);
             userService.createUser(user);
-            botContext = new BotContext(this, user, text);
 
-            state.enter(botContext);
+            botContext = new BotContext(this, user, text, contact);
+            //state.enter(botContext);
+
+
+            userState.enter(botContext);
         } else {
             //если нашли пользователя, получения его состояния
-            botContext = new BotContext(this, user, text);
-            state = BotState.byId(user.getStateId());
+            botContext = new BotContext(this, user, text, contact);
+            //state = BotState.byId(user.getStateId());
+
+            userState = StateAbstract.create(BotStates.fromValue(user.getUserState()));
         }
 
         //обрабатываем что ввел пользователь
-        state.handleInput(botContext);
-
+        //state.handleInput(botContext);
+        userState.handleInput(botContext);
         do {
-            state = state.nextState(botContext);
-            state.enter(botContext);
-        } while (state.isEnterImmediately());
+            //state = state.nextState(botContext);
+            //state.enter(botContext);
 
-        user.setStateId(state.ordinal());
+            userState = StateAbstract.create(userState.nextState(botContext));
+            userState.enter(botContext);
+        } while (userState.isEnterImmediately());
+
+        user.setUserState(userState.currentState().toString());
         userService.updateUser(user);
     }
 
@@ -103,32 +114,33 @@ public class ChatBot extends TelegramLongPollingBot {
     private boolean checkCommands(Update update) {
         if (update.hasMessage() && (update.getMessage() != null)) {
             Message message = update.getMessage();
+            if (message.getEntities() != null) {
 
-            Optional<MessageEntity> commandEntity =
-                    message.getEntities().stream().filter(e -> "bot_command".equals(e.getType())).findFirst();
-            if (commandEntity.isPresent()) {
-                String command = message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
+                Optional<MessageEntity> commandEntity =
+                        message.getEntities().stream().filter(e -> "bot_command".equals(e.getType())).findFirst();
+                if (commandEntity.isPresent()) {
+                    String command = message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
 
-                if (Objects.equals(command, "/deleteMe")) {
-                    log.trace("INCOMING /deleteMe:{}", message.toString());
-                    Long userId = userService.findByChatId(message.getChatId()).getId();
-                    if (userId != null) {
-                        userService.deleteUser(userId);
+                    //TODO потом убрать
+                    if (Objects.equals(command, "/deleteMe")) {
+                        log.trace("INCOMING /deleteMe:{}", message.toString());
+                        Long userId = userService.findByChatId(message.getChatId()).getId();
+                        if (userId != null) {
+                            userService.deleteUser(userId);
+                        }
+                        return true;
                     }
 
-                    return true;
-                }
+                    if (Objects.equals(command, "/support")) {
+                        log.trace("INCOMING /support:{}", message.toString());
 
-                if (Objects.equals(command, "/support")) {
-                    log.trace("INCOMING /support:{}", message.toString());
-
-                    SendMessage messageToSend = SendMessage.builder()
-                            .chatId(Long.toString(message.getChatId()))
-                            .text("Напишите @HyecornSupportBot")
-                            .build();
-                    this.execute(messageToSend);
-
-                    return true;
+                        SendMessage messageToSend = SendMessage.builder()
+                                .chatId(Long.toString(message.getChatId()))
+                                .text("Напишите @HyecornSupportBot")
+                                .build();
+                        this.execute(messageToSend);
+                        return true;
+                    }
                 }
             }
         }
