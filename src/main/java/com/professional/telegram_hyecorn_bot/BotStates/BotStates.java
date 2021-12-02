@@ -11,6 +11,7 @@ public enum BotStates {
     EnterPhone("enterPhone"),
     EnterEmail("enterEmail"),
     Payment("payment"),
+    WaitingForPayment("watingForPayment"),
     Approved("approved"),
     ReadyToSpend("readToSpend"),
     AllCouponsSpent("allCouponsSpent");

@@ -8,12 +8,13 @@ public class PaymentState extends StateAbstract {
 
     @Override
     public void enter(BotContext context) {
-        context.getUser().setCouponsNumber(context.getUser().getCouponsNumber() + 10);
+        sendPaymentMessage(context);
+        //context.getUser().setCouponsNumber(context.getUser().getCouponsNumber() + 10);
     }
 
     @Override
     public BotStates nextState(BotContext context) {
-        return BotStates.Approved;
+        return BotStates.WaitingForPayment;
     }
 
     @Override

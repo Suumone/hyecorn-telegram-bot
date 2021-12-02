@@ -1,12 +1,14 @@
 package com.professional.telegram_hyecorn_bot.BotStates;
 
 import com.professional.telegram_hyecorn_bot.BotContext;
-import com.professional.telegram_hyecorn_bot.ButtonStates;
+import com.professional.telegram_hyecorn_bot.model.ButtonStates;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.telegram.telegrambots.meta.api.methods.send.SendInvoice;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.payments.LabeledPrice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
@@ -30,6 +32,7 @@ public abstract class StateAbstract {
         map.put(BotStates.EnterPhone, EnterPhoneState::new);
         map.put(BotStates.EnterEmail, EnterEmailState::new);
         map.put(BotStates.Payment, PaymentState::new);
+        map.put(BotStates.WaitingForPayment, WaitingForPaymentState::new);
         map.put(BotStates.Approved, ApprovedState::new);
         map.put(BotStates.ReadyToSpend, ReadyToSpendState::new);
         map.put(BotStates.AllCouponsSpent, AllCouponsSpentState::new);
@@ -65,6 +68,30 @@ public abstract class StateAbstract {
     }
 
     @SneakyThrows
+    protected void sendPaymentMessage(BotContext context) {
+        LabeledPrice price = new LabeledPrice();
+        List<LabeledPrice> labeledPriceList = new ArrayList<>();
+        price.setAmount(6900);
+        price.setLabel("label");
+        labeledPriceList.add(price);
+
+        SendInvoice message = SendInvoice.builder()
+                .chatId(Long.toString(context.getUser().getChatId()))
+                .payload("some payload")
+                .providerToken("381764678:TEST:31414")
+                //.providerToken("2021-12-01 21:03")
+                .description("some description")
+                .title("some title")
+                .currency("RUB")
+                .price(price)
+                .startParameter("")
+                .build();
+
+        log.trace("Sending message:{}", message.toString());
+        context.getBot().execute(message);
+    }
+
+    @SneakyThrows
     protected void sendMessageWithButton(BotContext context, String text, ButtonStates buttonState) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
@@ -75,11 +102,11 @@ public abstract class StateAbstract {
             case SPEND:
                 button.setText(ButtonStates.SPEND.toString());
                 button.setCallbackData(ButtonStates.SPEND.name());
-                //button.setUrl("google.com");
                 break;
             case SUBSCRIBE:
                 button.setText(ButtonStates.SUBSCRIBE.toString());
                 button.setCallbackData(ButtonStates.SUBSCRIBE.name());
+                //sendPaymentMessage(context);
                 break;
         }
 

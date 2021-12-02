@@ -1,7 +1,7 @@
 package com.professional.telegram_hyecorn_bot.BotStates;
 
 import com.professional.telegram_hyecorn_bot.BotContext;
-import com.professional.telegram_hyecorn_bot.ButtonStates;
+import com.professional.telegram_hyecorn_bot.model.ButtonStates;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -17,9 +17,8 @@ public class ReadyToSpendState extends StateAbstract {
                     ButtonStates.SPEND);
         } else {
             sendMessage(context, "Спасибо, что пользуетесь нашим сервисом! У вас не осталось чашек кофе по подписке.");
-            sendMessageWithButton(context,
-                    "Хотите оформить подписку повторно?",
-                    ButtonStates.SUBSCRIBE);
+            sendMessage(context, "Хотите оформить подписку повторно?");
+            sendPaymentMessage(context);
         }
     }
 

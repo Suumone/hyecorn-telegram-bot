@@ -1,4 +1,4 @@
-package com.professional.telegram_hyecorn_bot;
+package com.professional.telegram_hyecorn_bot.model;
 
 import lombok.AllArgsConstructor;
 
