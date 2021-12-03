@@ -10,7 +10,7 @@ public class EnterPhoneState extends StateAbstract {
 
     @Override
     public void enter(BotContext context) {
-        //кнопка убирается в начале следующего стейта(EnterEmailState.enter)
+        //кнопка убирается в начале следующего стейта(Payment.enter)
         sendMessageRequestPhone(context, "Введите номер телефона или поделитесь, нажав кнопку ниже ⏬");
     }
 
@@ -18,14 +18,14 @@ public class EnterPhoneState extends StateAbstract {
     public void handleInput(BotContext context) {
         if (context.getContact() != null && context.getContact().getPhoneNumber() != null) {
             context.getUser().setPhone(Utils.validatePhoneNumber(context.getContact().getPhoneNumber()));
-            next = BotStates.EnterEmail;
+            next = BotStates.Payment;
             return;
         }
 
         String phoneNumber = context.getInput();
         if (Utils.isValidPhoneNumber(phoneNumber)) {
             context.getUser().setPhone(Utils.validatePhoneNumber(phoneNumber));
-            next = BotStates.EnterEmail;
+            next = BotStates.Payment;
         } else {
             sendMessage(context, "Некорректный номер");
             next = BotStates.EnterPhone;
