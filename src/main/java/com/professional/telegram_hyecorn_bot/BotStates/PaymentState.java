@@ -8,6 +8,8 @@ public class PaymentState extends StateAbstract {
 
     @Override
     public void enter(BotContext context) {
+        sendKeyboardRemove(context, "Здесь будет оплата");
+
         context.getUser().setCouponsNumber(context.getUser().getCouponsNumber() + 10);
     }
 

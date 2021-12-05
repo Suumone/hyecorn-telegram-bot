@@ -1,13 +1,13 @@
-package com.professional.telegram_hyecorn_bot;
+package com.professional.telegram_hyecorn_bot.service;
 
+import com.professional.telegram_hyecorn_bot.BotContext;
 import com.professional.telegram_hyecorn_bot.BotStates.BotStates;
 import com.professional.telegram_hyecorn_bot.BotStates.StateAbstract;
 import com.professional.telegram_hyecorn_bot.model.User;
-import com.professional.telegram_hyecorn_bot.service.UserService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
@@ -15,7 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.*;
 import java.util.Objects;
 import java.util.Optional;
 
-@Component
+@Service
 @Slf4j
 public class ChatBot extends TelegramLongPollingBot {
 
@@ -27,6 +27,7 @@ public class ChatBot extends TelegramLongPollingBot {
     public ChatBot(@Value("${telegram.token}") String token,
                    @Value("${telegram.username}") String botUsername,
                    UserService userService) {
+        super();
         this.token = token;
         this.botUsername = botUsername;
         this.userService = userService;
@@ -70,38 +71,26 @@ public class ChatBot extends TelegramLongPollingBot {
         }
 
         User user = userService.findByChatId(chatId);
-
         BotContext botContext;
-        //BotState state;
         StateAbstract userState;
 
         //Возможно ли не найти пользователя по чату если у него есть кнопка????
         if (user == null) {
-            //state = BotState.getInitialState();
             userState = StateAbstract.create(BotStates.getInitialState());
             user = new User(chatId, userState.toString(), firstName, lastName);
             userService.createUser(user);
 
             botContext = new BotContext(this, user, text, contact);
-            //state.enter(botContext);
-
-
             userState.enter(botContext);
         } else {
             //если нашли пользователя, получения его состояния
             botContext = new BotContext(this, user, text, contact);
-            //state = BotState.byId(user.getStateId());
-
             userState = StateAbstract.create(BotStates.fromValue(user.getUserState()));
         }
 
         //обрабатываем что ввел пользователь
-        //state.handleInput(botContext);
         userState.handleInput(botContext);
         do {
-            //state = state.nextState(botContext);
-            //state.enter(botContext);
-
             userState = StateAbstract.create(userState.nextState(botContext));
             userState.enter(botContext);
         } while (userState.isEnterImmediately());
@@ -122,7 +111,7 @@ public class ChatBot extends TelegramLongPollingBot {
                     String command = message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
 
                     //TODO потом убрать
-                    if (Objects.equals(command, "/deleteMe")) {
+                    if ("/deleteMe".equalsIgnoreCase(command)) {
                         log.trace("INCOMING /deleteMe:{}", message.toString());
                         Long userId = userService.findByChatId(message.getChatId()).getId();
                         if (userId != null) {

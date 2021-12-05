@@ -8,7 +8,7 @@ public class EnterEmailState extends StateAbstract {
 
     @Override
     public void enter(BotContext context) {
-        sendMessageWithKeyboardRemove(context, "Введите почту");
+        //sendKeyboardRemove(context, "Введите почту");
     }
 
     @Override

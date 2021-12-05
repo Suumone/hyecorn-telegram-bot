@@ -136,7 +136,7 @@ public abstract class StateAbstract {
     }
 
     @SneakyThrows
-    protected void sendMessageWithKeyboardRemove(BotContext context, String text) {
+    protected void sendKeyboardRemove(BotContext context, String text) {
         SendMessage message = SendMessage.builder()
                 .chatId(Long.toString(context.getUser().getChatId()))
                 .text(text)
