@@ -8,16 +8,16 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.bots.TelegramWebhookBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @Slf4j
-public class ChatBot extends TelegramLongPollingBot {
+public class ChatBot extends TelegramWebhookBot {
 
     private final String token;
     private final String botUsername;
@@ -45,7 +45,6 @@ public class ChatBot extends TelegramLongPollingBot {
         return token;
     }
 
-    @Override
     public void onUpdateReceived(Update update) {
         if (checkCommands(update))
             return;
@@ -120,7 +119,7 @@ public class ChatBot extends TelegramLongPollingBot {
                         return true;
                     }
 
-                    if (Objects.equals(command, "/support")) {
+                    if ("/support".equalsIgnoreCase(command)) {
                         log.trace("INCOMING /support:{}", message.toString());
 
                         SendMessage messageToSend = SendMessage.builder()
@@ -134,5 +133,16 @@ public class ChatBot extends TelegramLongPollingBot {
             }
         }
         return false;
+    }
+
+    @Override
+    public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
+        log.info("chatbot/onWebhookUpdateReceived");
+        return null;
+    }
+
+    @Override
+    public String getBotPath() {
+        return null;
     }
 }

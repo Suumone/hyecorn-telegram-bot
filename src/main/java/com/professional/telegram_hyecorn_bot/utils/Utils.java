@@ -3,7 +3,7 @@ package com.professional.telegram_hyecorn_bot.utils;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.LongValidator;
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 
 public class Utils {
     public static boolean isValidEmail(String email) {
