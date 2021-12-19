@@ -25,7 +25,7 @@ public class SendHttp {
     private void send() {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://hyecorn-telegram-whbot.herokuapp.com/sleepPrevent"))
+                .uri(URI.create("https://hyecorn-telegram-bot.herokuapp.com/sleepPrevent"))
                 .GET()
                 .build();
 
